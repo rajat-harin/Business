@@ -2,7 +2,10 @@
 
 
 {% block header %}
-<h1 id = "playerName">{% block title %}{{playerName}}{% endblock %}</h1>
+<h1 id="playerName">{% block title %}{{playerName}}{% endblock %}</h1>
+<div class="log">
+    <textarea id="chat" cols="80" rows="20"></textarea><br>
+</div>
 {% endblock %}
 
 {% block content %}
