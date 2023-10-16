@@ -1,0 +1,23 @@
+table, th, td {
+    border:1px solid black;
+    text-align: center;
+  }
+td{
+    position: relative;
+}
+.horizontal > td{
+    width: 50px;
+    height: 200px;
+}
+.vertical > td{
+    width: 100px;
+    height: 100px;
+}
+
+.avatar {
+    width: 50px;
+}
+#player2{
+    position: absolute;
+    left: -1px;
+}
