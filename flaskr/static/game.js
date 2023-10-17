@@ -3,16 +3,17 @@ var playerLocation = [0, 0, 0, 0]
 var playerName = ''
 var playersState = {}
 var newPlayersState = {}
-$(document).ready(() =>{
+var properties = null
+$(document).ready(() => {
     playerName = $("#playerName").text()
-  
 });
 var socket = io.connect();
 
 // connect to socket
 socket.on("connect", () => {
-    console.log('connected!')
+    console.log('connected!');
     socket.emit('joined', {});
+    socket.emit('getBoardData',{});
 });
 
 // disconnect from socket
@@ -26,6 +27,14 @@ socket.on('status', (data) => {
     $('#chat').scrollTop($('#chat')[0].scrollHeight);
 });
 
+//update board based on properties board data
+socket.on('populateBoard', (data) => {
+    if(properties == null){
+        properties = data.properties
+        generateBoard(properties)
+    }
+});
+
 // update dice based on rolled number
 socket.on("diceRolled", (data) => {
     $("#Dice").text(data.number)
@@ -34,12 +43,12 @@ socket.on("diceRolled", (data) => {
 //initial setting of player avatars on board
 socket.on("setPlayers", (data) => {
     console.log("setting Players!");
-    $("#b0").html(``)
+    $("#b0>.playerSpace").html(``)
     playersState = data.players
     newPlayersState = data.players
     for (player in data.players) {
         $(`#${player}`).remove()
-        $("#b" + data.players[player].location)
+        $("#b" + data.players[player].location + ">.playerSpace")
             .append(`<img id="${player}" class="avatar" src = "/static/${data.players[player].avatar}" />`)
     };
 });
@@ -57,8 +66,8 @@ function updateBoard(playersState, newPlayersState) {
     console.log("checking Player state difference!")
     console.log(playersState);
     console.log(newPlayersState);
-    for(player in playersState) {
-        if(playersState[player].location != newPlayersState[player].location) {
+    for (player in playersState) {
+        if (playersState[player].location != newPlayersState[player].location) {
             updateLocation(player, playersState[player].location, newPlayersState[player].location)
             playersState[player].location = newPlayersState[player].location
         }
@@ -68,7 +77,7 @@ function updateBoard(playersState, newPlayersState) {
 function updateLocation(player, source, target) {
     //update location of player avatar
     console.log("updating Location!");
-    $("#b" + source + `>#${player}`).detach().prependTo("#b" + target);
+    $("#b" + source + `>.playerSpace>#${player}`).detach().prependTo("#b" + target+">.playerSpace");
 }
 
 //util function for dom objects
@@ -86,6 +95,38 @@ function finishTurn() {
 }
 
 function propertyCard(property) {
-    
-    
+
+}
+
+//board related functions
+//generate bord based on passed data
+function generateBoard(properties) {
+    properties.forEach(property => {
+        if (property.titledeed == "TRUE") {
+            $("#b" + property.position).html(
+                `
+                <div class="spaceDetails">
+                    <div class="propertyGroup ${property.group}"></div>
+                    <div class="propertyName">${property.name.replaceAll(/\s/g,"<br>")}</div>
+                    <div class="propertyPrice">${property.price}</div>
+                </div>
+                <div class="playerSpace"></div>
+                `
+            );
+        }
+        else {
+            if (property.titledeed == "FALSE") {
+                $("#b" + property.position).html(
+                    `
+                    <div class="spaceDetails">
+                        <div class="propertyGroup ${property.group}"></div>
+                        <div class="propertyName">${property.name.replaceAll(/\s/g,"<br>")}</div>
+                        <div class="propertyPrice">${property.price}</div>
+                    </div>
+                    <div class="playerSpace"></div>
+                    `
+                );
+            }
+        }
+    });
 }

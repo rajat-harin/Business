@@ -1,3 +1,5 @@
+import json
+import os
 import random
 from flask import Blueprint, session
 from flask_socketio import (emit, join_room, leave_room)
@@ -70,6 +72,13 @@ def surrender(data):
     rooms[room]['currentPlayers'] -= 1
     rooms[room]['maxPlayers'] -= 1
     emit('status', {'msg': session.get('name') + ' has surrendered the game.'}, room=room)
+
+@socketio.on("getBoardData")
+def getBoardData(data):
+    room = session.get('room')
+    json_data = open(os.path.join(os.path.realpath(os.path.dirname(__file__)), "static", "business.json"))
+    data = json.load(json_data)
+    emit('populateBoard',{'properties':data['properties']}, room = room)
 
 @socketio.on('diceRolling')
 def diceRolling(data):
