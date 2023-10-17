@@ -9,6 +9,7 @@
 {% endblock %}
 
 {% block content %}
+<section class="businessBoard">
 <table style="width: 100%;border: 1px solid;">
     <tr class="horizontal">
         <td id="b0">0</td>
@@ -88,5 +89,62 @@
         <td id="b20">20</td>
     </tr>
 </table>
+</section>
+<hr>
+<h3>Your Properties:</h3>
+<hr>
+<section class="propertyOwned">
+    <div id="mediterraneanave" class="propertyCard">
+        <div class="propertyCardTitle purple">
+            Title Deed
+            <h3>Test Card</h3>
+        </div>
+        <div class="propertyCardDetails">
+            <table class="propertyCardDetailsTable">
+                <tr>
+                    <td class="rentType"> Rent </td>
+                    <td class="rentPrice">&#36;4</td>
+                </tr>
+                <tr>
+                    <td class="rentType"> Rent w/ colorset </td>
+                    <td class="rentPrice">&#36;4</td>
+                </tr>
+                <tr>
+                    <td class="rentType"> Rent w/ H1 </td>
+                    <td class="rentPrice">&#36;4</td>
+                </tr>
+                <tr>
+                    <td class="rentType"> Rent w/ H2 </td>
+                    <td class="rentPrice">&#36;4</td>
+                </tr>
+                <tr>
+                    <td class="rentType"> Rent w/ H3 </td>
+                    <td class="rentPrice">&#36;4</td>
+                </tr>
+                <tr>
+                    <td class="rentType"> Rent w/ H4 </td>
+                    <td class="rentPrice">&#36;4</td>
+                </tr>
+                <tr>
+                    <td class="rentType"> Rent w/ Hotel </td>
+                    <td class="rentPrice">&#36;4</td>
+                </tr>
+                <hr>
+                <tr>
+                    <td class="rentType"> House Cost </td>
+                    <td class="rentPrice">&#36;4</td>
+                </tr>
+            </table>
+            <hr>
+            <table class="propertyActions">
+                <tr>
+                    <td class="propertyActionButtons">Buy</td>
+                    <td class="propertyActionButtons">Sell</td>
+                    <td class="propertyActionButtons">Mortgage</td>
+                </tr>
+            </table>
+        </div>
 
+    </div>
+</section>
 {% endblock %}
