@@ -23,26 +23,45 @@ section.businessBoard>td {
 }
 
 .vertical>td {
-    width: 150px;
-    height: 100px;
+    width: 100px;
+    height: 200px;
 }
-
-/* .vertical_right>td>div{
-    transform: rotate(-90deg);
-} */
 
 .avatar {
-    width: 50px;
     z-index: 9;
+    width: 50px;
+    vertical-align: -100px;
 }
 
-.boardDetails {
+
+.spaceDetails {
     width: 100%;
     height: 100%;
     position: absolute;
     top: 0;
     left: 0;
 }
+.playerSpace {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 9;
+}
+.propertyGroup{
+    width: 100%;
+    height: 30px;
+}
+.propertyName{
+    width: 100%;
+    height: 60%;
+}
+.propertyPrice{
+    width: 100%;
+    height: 30%;
+}
+
 
 #player2 {
     position: absolute;
@@ -64,10 +83,6 @@ section.businessBoard>td {
     padding: 5px 10px;
     border: 1px solid black;
     text-align: center;
-}
-
-.purple {
-    background-color: #6200ee;
 }
 
 .propertyCardDetails {
@@ -105,3 +120,17 @@ section.businessBoard>td {
 /* .propertyName{
     max-width: 15ch;
 } */
+
+/*Color classes*/
+
+.Special{background-color: #E0F7FA }
+.Purple{background-color: #D500F9 }
+.Railroad{background-color: #424242 }
+.lightgreen{background-color: #76FF03 }
+.Violet{background-color: #1A237E }
+.Utilities{background-color: #37474F }
+.Orange{background-color: #FF9100 }
+.Red{background-color: #FF1744 }
+.Yellow{background-color: #FFEA00 }
+.darkgreen{background-color: #1DE9B6 }
+.darkblue{background-color: #00B0FF }

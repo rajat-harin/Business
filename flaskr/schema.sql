@@ -1,0 +1,47 @@
+DROP TABLE IF EXISTS USERS;
+DROP TABLE IF EXISTS ROOMS;
+DROP TABLE IF EXISTS PROPERTIES;
+DROP TABLE IF EXISTS OWNERSHIPS;
+
+CREATE TABLE ROOMS (
+  --id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT PRIMARY KEY,
+  created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  maxPlayers INTEGER NOT NULL,
+  currentPlayers INTEGER NOT NULL
+);
+
+CREATE TABLE USERS (
+  username TEXT PRIMARY KEY,
+  avatar TEXT UNIQUE,
+  balance INTEGER,
+  password TEXT,
+  position INTEGER CHECK (position>=0 AND position <= 39) DEFAULT 0,
+  room TEXT NOT NULL,
+  turn INTEGER,
+  turnPlayed BOOLEAN,
+  FOREIGN KEY (room) REFERENCES ROOMS (title)
+);
+CREATE TABLE PROPERTIES (
+  position INTEGER PRIMARY KEY CHECK(position>=0 AND position <= 39) DEFAULT 0,
+  title TEXT NOT NULL,
+  titleDeed BOOLEAN,
+  groupName TEXT NOT NULL,
+  price INTEGER,
+  rent INTEGER,
+  multpliedRent_1 INTEGER,
+  multpliedRent_2 INTEGER,
+  multpliedRent_3 INTEGER,
+  multpliedRent_4 INTEGER,
+  multpliedRent_5 INTEGER,
+  houseCost  INTEGER
+);
+CREATE TABLE OWNERSHIPS (
+  room TEXT NOT NULL,
+  ownerName TEXT NOT NULL,
+  position INTEGER NOT NULL,
+  FOREIGN KEY (room) REFERENCES ROOMS (title),
+  FOREIGN KEY (ownerName) REFERENCES USERS (username),
+  FOREIGN KEY (position) REFERENCES PROPERTIES (position),
+  CONSTRAINT PK_Ownerships PRIMARY KEY (room,ownerName)
+);

@@ -13,7 +13,8 @@ def create_app(test_config = None):
     )
     socketio.init_app(app)
     #socketio.run(app)
-    from . import game, events, auth
+    from . import game, events, auth, db
+    db.init_app(app)
     app.register_blueprint(game.bp)
     app.register_blueprint(events.bp)
     app.register_blueprint(auth.bp)

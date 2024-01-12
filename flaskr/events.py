@@ -8,9 +8,13 @@ from . import socketio
 bp = Blueprint('event', __name__)
 
 players = dict()
-#player = {'name': '', 'room':'', 'location': 0, 'balance': 0, 'avatar' : '', turn: 0, turnPlayed: False}
+#player = {'name': '', 'room':'', 'location': 0, 'balance': 0, 'avatar' : '', turn: 0, turnPlayed: False, ownedProperties: []}
 rooms = dict()
+#room = {'name': '', 'maxPlayers':0, 'currentPlayers': 0, 'currentTurn': -1, ownedProperties: [], bankBalance: 20580}
 currentTurn = -1
+properties = list()
+
+auctionDetails = dict()
 
 @socketio.on('joined')
 def joined(data):
@@ -25,11 +29,26 @@ def joined(data):
     # check if room exists, if not create the room
     if room not in rooms:
         rooms[room] = {}
+        rooms[room]['name'] = room
         rooms[room]['maxPlayers'] = int(maxPlayers)
         rooms[room]['currentPlayers'] = 0
         rooms[room]['currentTurn'] = -1
-    player = {'name': name, 'room': room, 'location': 0, 'balance': 0}
-    players[name] = player
+        rooms[room]['ownedProperties'] = []
+        rooms[room]['bankBalance'] = 20580
+       
+        json_data = open(os.path.join(os.path.realpath(os.path.dirname(__file__)), "static", "business.json"))
+        properties.extend(json.load(json_data)['properties'])
+        for property in properties:
+            if property['group'] != 'Special':
+                rooms[room]['ownedProperties'].append({'ownership':False, 'owner': 'Bank'})
+            else:
+                rooms[room]['ownedProperties'].append({'ownership':True, 'owner': 'Bank'})
+
+    if name not in players:
+        player = {'name': name, 'room': room, 'location': 0, 'balance': 1500}
+        players[name] = player
+        rooms[room]['bankBalance'] -= 1500
+        rooms[room]['currentPlayers'] += 1
     counter = 0
 
     # sets turn number for each player based on the sequence of them joing the room
@@ -44,15 +63,14 @@ def joined(data):
 
     # add player to room and set room state
     join_room(room)
-    rooms[room]['currentPlayers'] += 1
     if rooms[room]['maxPlayers'] == rooms[room]['currentPlayers']:
         rooms[room]['currentTurn'] = 0
         emit('status', {'msg': session.get('room') + ': Required number of players are met!<br> Start the game...(Turns based on time of entry)'}, room=room)
     else :
         emit('status', {'msg': session.get('room') + ': waiting for required number of players!'}, room=room)
     emit('status', {'msg': session.get('name') + ' has entered the room.'}, room=room)
-    emit('setPlayers',{'players':players, 'currentTurn': 0}, room=room)
-    print(rooms)
+    emit('setPlayers',{'players':players,'rooms' : rooms[room], 'currentTurn': 0}, room=room)
+    #print(rooms)
 
 @socketio.on('left')
 def left(data):
@@ -67,17 +85,21 @@ def left(data):
 def surrender(data):
     """Sent by clients when they surrender the game.
     A status message is broadcast to all people in the room and reset the room data."""
+    player = session.get('name')
     room = session.get('room')
     leave_room(room)
     rooms[room]['currentPlayers'] -= 1
     rooms[room]['maxPlayers'] -= 1
-    emit('status', {'msg': session.get('name') + ' has surrendered the game.'}, room=room)
+    emit('status', {'msg': player + ' has surrendered the game.'}, room=room)
 
 @socketio.on("getBoardData")
 def getBoardData(data):
+    """Sent by clients for setting up the board.
+    """
     room = session.get('room')
     json_data = open(os.path.join(os.path.realpath(os.path.dirname(__file__)), "static", "business.json"))
     data = json.load(json_data)
+
     emit('populateBoard',{'properties':data['properties']}, room = room)
 
 @socketio.on('diceRolling')
@@ -88,13 +110,25 @@ def diceRolling(data):
     if players[data['player']]['turn'] == rooms[room]['currentTurn'] and not players[data['player']]['turnPlayed']:
         players[data['player']]['turnPlayed'] = True
         roll = random.randrange(1,13)
-        if players[data['player']]['location'] // 40 == 1:
+        if (players[data['player']]['location'] + roll) // 40 == 1:
             players[data['player']]['location'] = (players[data['player']]['location'] + roll) % 40
-            updateBalance(data['player'], expense=0)
+            updateBalance('bank', data['player'], room, amount=200)
         else:
             players[data['player']]['location'] = (players[data['player']]['location'] + roll) % 40
-        emit('playerMove',{'players':players,'sourceLocation':data['location'], 'targetLocation':(data['location']+roll)%40},room=room)
+        #if players[data['player']]['location'] == 
+
+        emit('playerMove',{'players':players, 'rooms':rooms[room]},room=room)
         emit('diceRolled',{'number':roll},room=room)
+
+        """
+        check what action to take based on ownership
+        """
+        if not rooms[room]['ownedProperties'][players[data['player']]['location']]['ownership'] and rooms[room]['ownedProperties'][players[data['player']]['location']]['owner'] == 'Bank':
+            print("landed on unowned tile","sending puchase options")
+            emit('propertyOptions',{'playerName': session.get('name'), 'players':players, 'rooms':rooms[room],'action': 'firstPurchase'}, room = room)
+        else:
+            print("landed on owned tile","calculating expense")
+            checkAction(data['player'], room, roll)
     else:
         emit('status', {'msg': session.get('name') + ' dont be greedy. wait for your turn'}, room=room)
 
@@ -105,10 +139,36 @@ def finishTurn(data):
     if players[data['player']]['turn'] == rooms[room]['currentTurn'] and players[data['player']]['turnPlayed']:
         players[data['player']]['turnPlayed'] = False
         rooms[room]['currentTurn'] = ( rooms[room]['currentTurn'] + 1) % rooms[room]['maxPlayers'] #chage to players in room
-        updateBalance(data['player'], expense)
+        #updateBalance(data['player'], expense)
     print(rooms[room]['currentTurn'])
 
 
-def updateBalance(player, expense):
+def updateBalance(payer, receiver, room, amount):
     #update balace based on player activity
+    if payer == 'bank':
+        players[receiver]['balance'] += amount
+        rooms[room]['bankBalance'] -= amount
+    elif receiver == 'bank':
+        players[payer]['balance'] -= amount
+        rooms[room]['bankBalance'] += amount
+    else:
+        players[receiver]['balance'] += amount
+        players[payer]['balance'] -= amount
+
+def checkAction(player, room, roll):
     pass
+@socketio.on('buyProperty')
+def buyProperty(data):
+    room = session.get('room')
+    rooms[room]['ownedProperties'][players[data['player']]['location']]['ownership'] = False
+    rooms[room]['ownedProperties'][players[data['player']]['location']]['owner'] = data['player']
+    updateBalance(data['player'], 'bank', room, amount = properties[players[data['player']]['location']]['price'])
+    emit('purchaseComplete',{'playerName': session.get('name'), 'players':players, 'rooms':rooms[room],'action': 'firstPurchase'}, room = room)
+
+@socketio.on('auctionProperty')
+def auctionProperty(data):
+    room = session.get('room')
+    auctionDetails = {'owner':'bank', 'bid':'0','status':'started', 'playerList': []}
+    auctionDetails['playerList'] = list(players.keys())
+    print(auctionDetails)
+    emit('auction',{'playerName': session.get('name'), 'players':players, 'rooms':rooms[room],'action': 'aution','auctionDetails':auctionDetails}, room = room)

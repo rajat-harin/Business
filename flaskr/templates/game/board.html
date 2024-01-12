@@ -3,106 +3,387 @@
 
 {% block header %}
 <h1 id="playerName">{% block title %}{{playerName}}{% endblock %}</h1>
+<div>
+    <button type="button" onclick=surrender()>Surrender</button>
+</div>
 <div class="log">
-    <textarea id="chat" cols="80" rows="20"></textarea><br>
+    <hr>
+    <label for="chat">log:</label>
+    <br>
+    <textarea id="chat" cols="80" rows="10"></textarea><br>
+    <hr>
 </div>
 {% endblock %}
 
 {% block content %}
 <section class="businessBoard">
-<table style="width: 100%;border: 1px solid;">
-    <tr class="horizontal">
-        <td id="b0"><div class="playerSpace"></div></td>
-        <td id="b1">
-            <div class="spaceDetails">
-                <div class="propertyGroup"></div>
-                <div class="propertyName"></div>
-                <div class="propertyPrice"></div>
-            </div>
-            <div class="playerSpace"></div>
-        </td>
-        <td id="b2">2</td>
-        <td id="b3">3</td>
-        <td id="b4">4</td>
-        <td id="b5">5</td>
-        <td id="b6">6</td>
-        <td id="b7">7</td>
-        <td id="b8">8</td>
-        <td id="b9">9</td>
-        <td id="b10">10</td>
-    </tr>
-    <tr class="vertical vertical_right">
-        <td id="b39">39</td>
-        <td id="centerSpace" colspan="9" rowspan="9">
-            <div>
-                <div id="Dice">X</div>
-                <button type="button" onclick="rollDice()">Roll</button>
-                <button type="button" onclick="finishTurn()">Finish Turn</button>
-            </div>
-        </td>
-        <td id="b11">11</td>
-    </tr>
-    <tr class="vertical">
-        <td id="b38">38</td>
+    <table style="width: 100%;border: 1px solid;">
+        <tr class="horizontal">
+            <td id="b0">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+                </div>
+            </td>
+            <td id="b1">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
+            <td id="b2">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
+            <td id="b3">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
+            <td id="b4">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
+            <td id="b5">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
+            <td id="b6">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
+            <td id="b7">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
+            <td id="b8">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
+            <td id="b9">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
+            <td id="b10">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
+        </tr>
+        <tr class="vertical ">
+            <td id="b39">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
+            <td id="centerSpace" colspan="9" rowspan="9">
+                <div>
+                    <div id="Dice">X</div>
+                    <button id="roll" type="button" onclick="rollDice()">Roll</button>
+                    <button id="finishTurn" type="button" onclick="finishTurn()">Finish Turn</button>
+                </div>
+            </td>
+            <td id="b11" class="vertical_right">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
+        </tr>
+        <tr class="vertical">
+            <td id="b38">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
 
-        <td id="b12">12</td>
-    </tr>
-    <tr class="vertical">
-        <td id="b37">37</td>
+            <td id="b12">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
+        </tr>
+        <tr class="vertical">
+            <td id="b37">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
 
-        <td id="b13">13</td>
-    </tr>
-    <tr class="vertical">
-        <td id="b36">36</td>
+            <td id="b13">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
+        </tr>
+        <tr class="vertical">
+            <td id="b36">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
 
-        <td id="b14">14</td>
-    </tr>
-    <tr class="vertical">
-        <td id="b35">35</td>
+            <td id="b14">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
+        </tr>
+        <tr class="vertical">
+            <td id="b35">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
 
-        <td id="b15">15</td>
-    </tr>
-    <tr class="vertical">
-        <td id="b34">34</td>
+            <td id="b15">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
+        </tr>
+        <tr class="vertical">
+            <td id="b34">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
 
-        <td id="b16">16</td>
-    </tr>
-    <tr class="vertical">
-        <td id="b33">33</td>
+            <td id="b16">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
+        </tr>
+        <tr class="vertical">
+            <td id="b33">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
 
-        <td id="b17">17</td>
-    </tr>
-    <tr class="vertical">
-        <td id="b32">32</td>
+            <td id="b17">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
+        </tr>
+        <tr class="vertical">
+            <td id="b32">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
 
-        <td id="b18">18</td>
-    </tr>
-    <tr class="vertical">
-        <td id="b31">31</td>
+            <td id="b18">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
+        </tr>
+        <tr class="vertical">
+            <td id="b31">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
 
-        <td id="b19">19</td>
-    </tr>
-    <tr class="horizontal">
-        <td id="b30">30</td>
-        <td id="b29">29</td>
-        <td id="b28">28</td>
-        <td id="b27">27</td>
-        <td id="b26">26</td>
-        <td id="b25">25</td>
-        <td id="b24">24</td>
-        <td id="b23">23</td>
-        <td id="b22">22</td>
-        <td id="b21">21</td>
-        <td id="b20">20</td>
-    </tr>
-</table>
+            <td id="b19">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
+        </tr>
+        <tr class="horizontal">
+            <td id="b30">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
+            <td id="b29">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
+            <td id="b28">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
+            <td id="b27">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
+            <td id="b26">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
+            <td id="b25">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
+            <td id="b24">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
+            <td id="b23">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
+            <td id="b22">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
+            <td id="b21">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
+            <td id="b20">
+                <div class="spaceDetails">
+                    <div class="propertyGroup"></div>
+                    <div class="propertyName"></div>
+                    <div class="propertyPrice"></div>
+                </div>
+                <div class="playerSpace"></div>
+            </td>
+        </tr>
+    </table>
 </section>
 <hr>
 <h3>Your Properties:</h3>
 <hr>
 <section class="propertyOwned">
     <div id="mediterraneanave" class="propertyCard">
-        <div class="propertyCardTitle purple">
+        <div class="propertyCardTitle Purple">
             Title Deed
             <h3>Test Card</h3>
         </div>

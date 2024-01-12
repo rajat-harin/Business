@@ -6,14 +6,16 @@ var newPlayersState = {}
 var properties = null
 $(document).ready(() => {
     playerName = $("#playerName").text()
+
+
 });
 var socket = io.connect();
 
 // connect to socket
 socket.on("connect", () => {
     console.log('connected!');
+    socket.emit('getBoardData', {});
     socket.emit('joined', {});
-    socket.emit('getBoardData',{});
 });
 
 // disconnect from socket
@@ -29,7 +31,7 @@ socket.on('status', (data) => {
 
 //update board based on properties board data
 socket.on('populateBoard', (data) => {
-    if(properties == null){
+    if (properties == null) {
         properties = data.properties
         generateBoard(properties)
     }
@@ -43,6 +45,8 @@ socket.on("diceRolled", (data) => {
 //initial setting of player avatars on board
 socket.on("setPlayers", (data) => {
     console.log("setting Players!");
+    console.log(data.rooms);
+    console.log(data.players);
     $("#b0>.playerSpace").html(``)
     playersState = data.players
     newPlayersState = data.players
@@ -56,7 +60,88 @@ socket.on("setPlayers", (data) => {
 // player movement based on the rolled number
 socket.on("playerMove", (data) => {
     console.log("moving player!")
+    console.log(data.rooms);
     updateBoard(playersState, data.players)
+});
+
+//Property options, puchase, sell , auction
+socket.on("propertyOptions", (data) => {
+    $('#finishTurn').prop("disabled", true);
+    $('#roll').prop("disabled", true);
+    console.log(data.playerName + "landed on unowned property!")
+    console.log(data.rooms);
+    if (data.playerName == playerName) {
+        $('<div></div>').appendTo('body')
+            .html('<div><h6>' + "want to purchase? <b>"+ properties[data.players[playerName].location].name + '</b> for <b>' + properties[data.players[playerName].location].price + '?</b></h6></div>')
+            .dialog({
+                modal: true,
+                title: 'confirm?',
+                zIndex: 10000,
+                autoOpen: true,
+                width: 'auto',
+                resizable: false,
+                buttons: {
+                    Yes: function () {
+                        // $(obj).removeAttr('onclick');                                
+                        // $(obj).parents('.Parent').remove();
+                        socket.emit('buyProperty', {player: playerName});
+                        $(this).remove();
+                    },
+                    No: function () {
+                        socket.emit('auctionProperty', {player: playerName});
+                        $(this).remove();
+                    }
+                },
+                close: function (event, ui) {
+                    socket.emit('auctionProperty', {player: playerName});
+                    $(this).remove();
+                }
+            });
+    }
+});
+
+socket.on("auction", (data) => {
+    $('#finishTurn').prop("disabled", true);
+    $('#roll').prop("disabled", true);
+    console.log(data.playerName + "aution started")
+    console.log(data);
+    if (data.auctionDetails.playerList.includes(playerName)) {
+        console.log("inside");
+        $('<div id="auction"></div>').appendTo('body')
+            .html('<div><h6 id="autionDetails>' + "want to purchase? <b>"+ properties[data.players[playerName].location].name + '</b> for <b>' + properties[data.players[playerName].location].price + '?</b></h6></div>')
+            .dialog({
+                modal: true,
+                title: 'confirm?',
+                zIndex: 10000,
+                autoOpen: true,
+                width: 'auto',
+                resizable: false,
+                buttons: {
+                    Yes: function () {
+                        // $(obj).removeAttr('onclick');                                
+                        // $(obj).parents('.Parent').remove();
+
+                        $('body').append('<h1>Confirm Dialog Result: <i>Raise</i></h1>');
+                        socket.emit('auctionRaise', {player: playerName});
+                        $(this).dialog("close");
+                    },
+                    No: function () {
+                        $('body').append('<h1>Confirm Dialog Result: <i>Fold</i></h1>');
+                        socket.emit('auctionFold', {player: playerName});
+                        $(this).dialog("close");
+                    }
+                },
+                close: function (event, ui) {
+                    socket.emit('auctionProperty', {player: playerName});
+                    $(this).remove();
+                }
+            });
+    }
+});
+
+socket.on("purchaseComplete", (data) => {
+    $('#finishTurn').removeAttr("disabled");
+    $('#roll').removeAttr("disabled");
 });
 
 //util functions for socket events
@@ -64,7 +149,6 @@ socket.on("playerMove", (data) => {
 function updateBoard(playersState, newPlayersState) {
     // update board based on current state of players object
     console.log("checking Player state difference!")
-    console.log(playersState);
     console.log(newPlayersState);
     for (player in playersState) {
         if (playersState[player].location != newPlayersState[player].location) {
@@ -77,7 +161,7 @@ function updateBoard(playersState, newPlayersState) {
 function updateLocation(player, source, target) {
     //update location of player avatar
     console.log("updating Location!");
-    $("#b" + source + `>.playerSpace>#${player}`).detach().prependTo("#b" + target+">.playerSpace");
+    $("#b" + source + `>.playerSpace>#${player}`).detach().prependTo("#b" + target + ">.playerSpace");
 }
 
 //util function for dom objects
@@ -103,30 +187,59 @@ function propertyCard(property) {
 function generateBoard(properties) {
     properties.forEach(property => {
         if (property.titledeed == "TRUE") {
-            $("#b" + property.position).html(
+            $("#b" + property.position + ">.spaceDetails").html(
                 `
-                <div class="spaceDetails">
+                
                     <div class="propertyGroup ${property.group}"></div>
-                    <div class="propertyName">${property.name.replaceAll(/\s/g,"<br>")}</div>
+                    <div class="propertyName">${property.name.replaceAll(/\s/g, "<br>")}</div>
                     <div class="propertyPrice">${property.price}</div>
-                </div>
-                <div class="playerSpace"></div>
+                
                 `
             );
         }
         else {
             if (property.titledeed == "FALSE") {
-                $("#b" + property.position).html(
+                $("#b" + property.position + ">.spaceDetails").html(
                     `
-                    <div class="spaceDetails">
+                    
                         <div class="propertyGroup ${property.group}"></div>
-                        <div class="propertyName">${property.name.replaceAll(/\s/g,"<br>")}</div>
+                        <div class="propertyName">${property.name.replaceAll(/\s/g, "<br>")}</div>
                         <div class="propertyPrice">${property.price}</div>
-                    </div>
-                    <div class="playerSpace"></div>
+                   
+                    
                     `
                 );
             }
         }
     });
 }
+
+function surrender() {
+    $('<div></div>').appendTo('body')
+        .html('<div><h6>' + "Are you sure?" + '?</h6></div>')
+        .dialog({
+            modal: true,
+            title: 'confirm?',
+            zIndex: 10000,
+            autoOpen: true,
+            width: 'auto',
+            resizable: false,
+            buttons: {
+                Yes: function () {
+                    // $(obj).removeAttr('onclick');                                
+                    // $(obj).parents('.Parent').remove();
+
+                    $('body').append('<h1>Confirm Dialog Result: <i>Yes</i></h1>');
+                    socket.emit('surrender', {});
+                    $(this).dialog("close");
+                },
+                No: function () {
+                    $('body').append('<h1>Confirm Dialog Result: <i>No</i></h1>');
+                    $(this).dialog("close");
+                }
+            },
+            close: function (event, ui) {
+                $(this).remove();
+            }
+        });
+};
