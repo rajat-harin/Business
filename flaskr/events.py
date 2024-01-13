@@ -35,6 +35,7 @@ def joined(data):
         rooms[room]['currentTurn'] = -1
         rooms[room]['ownedProperties'] = []
         rooms[room]['bankBalance'] = 20580
+        rooms[room]['auctionDetails'] = {'owner':'bank', 'bid':0,'status':'init', 'playerList': []}
        
         json_data = open(os.path.join(os.path.realpath(os.path.dirname(__file__)), "static", "business.json"))
         properties.extend(json.load(json_data)['properties'])
@@ -168,7 +169,30 @@ def buyProperty(data):
 @socketio.on('auctionProperty')
 def auctionProperty(data):
     room = session.get('room')
-    auctionDetails = {'owner':'bank', 'bid':'0','status':'started', 'playerList': []}
-    auctionDetails['playerList'] = list(players.keys())
-    print(auctionDetails)
-    emit('auction',{'playerName': session.get('name'), 'players':players, 'rooms':rooms[room],'action': 'aution','auctionDetails':auctionDetails}, room = room)
+    if rooms[room]['auctionDetails']['status'] == 'init' or rooms[room]['auctionDetails']['status'] == 'finished':
+        #auctionDetails = {'owner':'bank', 'bid':0,'status':'started', 'playerList': []}
+        rooms[room]['auctionDetails'] = {'owner':'bank', 'bid':0,'status':'started', 'playerList': list(players.keys())}
+    print(rooms[room]['auctionDetails'])
+    print(data)
+    if len(rooms[room]['auctionDetails']['playerList']) > 1 :
+        rooms[room]['auctionDetails'] = 'InProgress'
+        #bid = data.bidAmount
+        emit('auction',{'playerName': session.get('name'), 'players':players, 'rooms':rooms[room],'action': 'aution','auctionDetails':rooms[room]['auctionDetails']}, room = room)
+    else: 
+        rooms[room]['auctionDetails'] = 'finished'
+        rooms[room]['auctionDetails']['bid']
+        updateBalance(rooms[room]['auctionDetails']['playerList'][0], 'bank', room, amount = rooms[room]['auctionDetails']['bid'])
+        emit('purchaseComplete',{'playerName': session.get('name'), 'players':players, 'rooms':rooms[room],'action': 'firstPurchase'}, room = room)
+
+@socketio.on('auctionRaise')
+def auctionProperty(data):
+    room = session.get('room')
+    rooms[room]['auctionDetails']['bid'] = max(rooms[room]['auctionDetails']['bid'], data.bidAmount)
+    #bid = data.bidAmount
+
+@socketio.on('auctionFold')
+def auctionProperty(data):
+    room = session.get('room')
+    player = session.get('name')
+    if player in auctionDetails['playerList']:
+        auctionDetails['playerList'].remove(player)

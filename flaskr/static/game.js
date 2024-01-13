@@ -108,7 +108,11 @@ socket.on("auction", (data) => {
     if (data.auctionDetails.playerList.includes(playerName)) {
         console.log("inside");
         $('<div id="auction"></div>').appendTo('body')
-            .html('<div><h6 id="autionDetails>' + "want to purchase? <b>"+ properties[data.players[playerName].location].name + '</b> for <b>' + properties[data.players[playerName].location].price + '?</b></h6></div>')
+            .html('<div><h6 id="autionDetails">' + 
+            properties[data.players[playerName].location].name  + 
+            ", want to bid? <b>"+ '</b> current bid <b>' + 
+            data.auctionDetails.bid + 
+            '?</b></h6><h3><label for = "bidAmount">Bid : </lable><input id="bidAmount" name="bidAmount" type="text"/></h3></div>')
             .dialog({
                 modal: true,
                 title: 'confirm?',
@@ -117,22 +121,23 @@ socket.on("auction", (data) => {
                 width: 'auto',
                 resizable: false,
                 buttons: {
-                    Yes: function () {
+                    Raise: function () {
                         // $(obj).removeAttr('onclick');                                
                         // $(obj).parents('.Parent').remove();
 
-                        $('body').append('<h1>Confirm Dialog Result: <i>Raise</i></h1>');
-                        socket.emit('auctionRaise', {player: playerName});
+                        //$('body').append('<h1>Confirm Dialog Result: <i>Raise</i></h1>');
+                        let bidAmount = $('#bidAmount').val() || 0
+                        socket.emit('auctionRaise', {player: playerName, bidAmount: bidAmount});
                         $(this).dialog("close");
                     },
-                    No: function () {
-                        $('body').append('<h1>Confirm Dialog Result: <i>Fold</i></h1>');
+                    Fold: function () {
+                        //$('body').append('<h1>Confirm Dialog Result: <i>Fold</i></h1>');
                         socket.emit('auctionFold', {player: playerName});
                         $(this).dialog("close");
                     }
                 },
                 close: function (event, ui) {
-                    socket.emit('auctionProperty', {player: playerName});
+                    socket.emit('auctionProperty', {player: playerName, bidAmount: bidAmount});
                     $(this).remove();
                 }
             });
