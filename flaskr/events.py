@@ -126,7 +126,7 @@ def diceRolling(data):
         """
         if not rooms[room]['ownedProperties'][players[data['player']]['location']]['ownership'] and rooms[room]['ownedProperties'][players[data['player']]['location']]['owner'] == 'Bank':
             print("landed on unowned tile","sending puchase options")
-            emit('propertyOptions',{'playerName': session.get('name'), 'players':players, 'rooms':rooms[room],'action': 'firstPurchase'}, room = room)
+            emit('propertyOptions',{'playerName': session.get('name'),'propertyLoc': players[data['player']]['location'], 'players':players, 'rooms':rooms[room],'action': 'firstPurchase'}, room = room)
         else:
             print("landed on owned tile","calculating expense")
             checkAction(data['player'], room, roll)
@@ -139,7 +139,7 @@ def finishTurn(data):
     expense = 0
     if players[data['player']]['turn'] == rooms[room]['currentTurn'] and players[data['player']]['turnPlayed']:
         players[data['player']]['turnPlayed'] = False
-        rooms[room]['currentTurn'] = ( rooms[room]['currentTurn'] + 1) % rooms[room]['maxPlayers'] #chage to players in room
+        rooms[room]['currentTurn'] = ( rooms[room]['currentTurn'] + 1) % rooms[room]['maxPlayers'] #change to players in room
         #updateBalance(data['player'], expense)
     print(rooms[room]['currentTurn'])
 
@@ -161,38 +161,53 @@ def checkAction(player, room, roll):
 @socketio.on('buyProperty')
 def buyProperty(data):
     room = session.get('room')
-    rooms[room]['ownedProperties'][players[data['player']]['location']]['ownership'] = False
+    rooms[room]['ownedProperties'][players[data['player']]['location']]['ownership'] = True
     rooms[room]['ownedProperties'][players[data['player']]['location']]['owner'] = data['player']
-    updateBalance(data['player'], 'bank', room, amount = properties[players[data['player']]['location']]['price'])
-    emit('purchaseComplete',{'playerName': session.get('name'), 'players':players, 'rooms':rooms[room],'action': 'firstPurchase'}, room = room)
+    updateBalance(data['player'], 'bank', room, amount = properties[data['propertyLoc']]['price'])
+    emit('purchaseComplete',{'playerName': session.get('name'), 'players':players, 'rooms':rooms[room],'action': 'firstPurchase', 'bidder': session.get('name'), 'bid' : properties[data['propertyLoc']]['price']}, room = room)
 
 @socketio.on('auctionProperty')
 def auctionProperty(data):
     room = session.get('room')
     if rooms[room]['auctionDetails']['status'] == 'init' or rooms[room]['auctionDetails']['status'] == 'finished':
         #auctionDetails = {'owner':'bank', 'bid':0,'status':'started', 'playerList': []}
-        rooms[room]['auctionDetails'] = {'owner':'bank', 'bid':0,'status':'started', 'playerList': list(players.keys())}
+        rooms[room]['auctionDetails'] = {'propertyLoc': data['propertyLoc'],'owner':'bank', 'bid':0,'status':'started', 'bidder' : '', 'playerList': list(players.keys())}
     print(rooms[room]['auctionDetails'])
-    print(data)
-    if len(rooms[room]['auctionDetails']['playerList']) > 1 :
-        rooms[room]['auctionDetails'] = 'InProgress'
+    print(rooms[room]['auctionDetails']['playerList'])
+    if len(rooms[room]['auctionDetails']['playerList']) >= 1 :
+        rooms[room]['auctionDetails']['status'] = 'InProgress'
+        print(data)
         #bid = data.bidAmount
         emit('auction',{'playerName': session.get('name'), 'players':players, 'rooms':rooms[room],'action': 'aution','auctionDetails':rooms[room]['auctionDetails']}, room = room)
     else: 
-        rooms[room]['auctionDetails'] = 'finished'
-        rooms[room]['auctionDetails']['bid']
-        updateBalance(rooms[room]['auctionDetails']['playerList'][0], 'bank', room, amount = rooms[room]['auctionDetails']['bid'])
-        emit('purchaseComplete',{'playerName': session.get('name'), 'players':players, 'rooms':rooms[room],'action': 'firstPurchase'}, room = room)
+        rooms[room]['auctionDetails']['status'] = 'finished'
+    
+        #rooms[room]['auctionDetails']['bid']
+        print('sold')
+        rooms[room]['ownedProperties'][rooms[room]['auctionDetails']['propertyLoc']]['ownership'] = True
+        rooms[room]['ownedProperties'][rooms[room]['auctionDetails']['propertyLoc']]['owner'] = rooms[room]['auctionDetails']['bidder']
+        updateBalance(rooms[room]['auctionDetails']['bidder'], 'bank', room, amount = rooms[room]['auctionDetails']['bid'])
+
+        emit('purchaseComplete',{'playerName': session.get('name'), 'players':players, 'rooms':rooms[room],'action': 'firstPurchase', 'bidder': rooms[room]['auctionDetails']['bidder'], 'bid' : rooms[room]['auctionDetails']['bid']}, room = room)
 
 @socketio.on('auctionRaise')
-def auctionProperty(data):
+def auctionRaise(data):
     room = session.get('room')
-    rooms[room]['auctionDetails']['bid'] = max(rooms[room]['auctionDetails']['bid'], data.bidAmount)
+    player = session.get('name')
+    print('raise' )
+    if rooms[room]['auctionDetails']['bid'] < data['bidAmount'] :
+        rooms[room]['auctionDetails']['bid'] =  data['bidAmount']
+        rooms[room]['auctionDetails']['bidder'] = player
+    auctionProperty(data)
     #bid = data.bidAmount
 
 @socketio.on('auctionFold')
-def auctionProperty(data):
+def auctionFold(data):
     room = session.get('room')
     player = session.get('name')
-    if player in auctionDetails['playerList']:
-        auctionDetails['playerList'].remove(player)
+    print('fold' + player)
+    if player in rooms[room]['auctionDetails']['playerList']:
+        rooms[room]['auctionDetails']['playerList'].remove(player)
+        print(rooms[room]['auctionDetails'])
+        print(len(rooms[room]['auctionDetails']))
+        auctionProperty(data)

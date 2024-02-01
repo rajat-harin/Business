@@ -72,7 +72,7 @@ socket.on("propertyOptions", (data) => {
     console.log(data.rooms);
     if (data.playerName == playerName) {
         $('<div></div>').appendTo('body')
-            .html('<div><h6>' + "want to purchase? <b>"+ properties[data.players[playerName].location].name + '</b> for <b>' + properties[data.players[playerName].location].price + '?</b></h6></div>')
+            .html('<div><h6>' + "want to purchase? <b>" + properties[data.propertyLoc].name + '</b> for <b>' + properties[data.players[playerName].location].price + '?</b></h6></div>')
             .dialog({
                 modal: true,
                 title: 'confirm?',
@@ -84,16 +84,16 @@ socket.on("propertyOptions", (data) => {
                     Yes: function () {
                         // $(obj).removeAttr('onclick');                                
                         // $(obj).parents('.Parent').remove();
-                        socket.emit('buyProperty', {player: playerName});
+                        socket.emit('buyProperty', { player: playerName, propertyLoc: data.propertyLoc });
                         $(this).remove();
                     },
                     No: function () {
-                        socket.emit('auctionProperty', {player: playerName});
+                        socket.emit('auctionProperty', { player: playerName, propertyLoc: data.propertyLoc });
                         $(this).remove();
                     }
                 },
                 close: function (event, ui) {
-                    socket.emit('auctionProperty', {player: playerName});
+                    socket.emit('auctionProperty', { player: playerName, propertyLoc: data.propertyLoc });
                     $(this).remove();
                 }
             });
@@ -101,50 +101,79 @@ socket.on("propertyOptions", (data) => {
 });
 
 socket.on("auction", (data) => {
+    clearInterval(countDown);
     $('#finishTurn').prop("disabled", true);
     $('#roll').prop("disabled", true);
-    console.log(data.playerName + "aution started")
-    console.log(data);
-    if (data.auctionDetails.playerList.includes(playerName)) {
-        console.log("inside");
-        $('<div id="auction"></div>').appendTo('body')
-            .html('<div><h6 id="autionDetails">' + 
-            properties[data.players[playerName].location].name  + 
-            ", want to bid? <b>"+ '</b> current bid <b>' + 
-            data.auctionDetails.bid + 
-            '?</b></h6><h3><label for = "bidAmount">Bid : </lable><input id="bidAmount" name="bidAmount" type="text"/></h3></div>')
-            .dialog({
-                modal: true,
-                title: 'confirm?',
-                zIndex: 10000,
-                autoOpen: true,
-                width: 'auto',
-                resizable: false,
-                buttons: {
-                    Raise: function () {
-                        // $(obj).removeAttr('onclick');                                
-                        // $(obj).parents('.Parent').remove();
-
-                        //$('body').append('<h1>Confirm Dialog Result: <i>Raise</i></h1>');
-                        let bidAmount = $('#bidAmount').val() || 0
-                        socket.emit('auctionRaise', {player: playerName, bidAmount: bidAmount});
-                        $(this).dialog("close");
-                    },
-                    Fold: function () {
-                        //$('body').append('<h1>Confirm Dialog Result: <i>Fold</i></h1>');
-                        socket.emit('auctionFold', {player: playerName});
-                        $(this).dialog("close");
-                    }
-                },
-                close: function (event, ui) {
-                    socket.emit('auctionProperty', {player: playerName, bidAmount: bidAmount});
-                    $(this).remove();
-                }
-            });
+    //console.log(data.playerName + "aution started")
+    //console.log(data);
+    if (data.auctionDetails.status == 'started') {
+        alert("Auction Started!",);
+        var sec = 10
+        var countDown = setInterval(() => {
+            sec -= 1;
+            $('#timer').html(`${sec} seconds`)
+            if (sec == 0) {
+                auctionFold();
+            }
+        }, 1000)
     }
+    if (data.auctionDetails.playerList.includes(playerName)) {
+        $('.popEvent').html(`<h3>Event Name : Auction <i id="timer"><i></h3>` +
+            `<br>` + `<h4>Current Highest Bid (by ${data.auctionDetails.bidder}): ${data.auctionDetails.bid}</h4>` +
+            `<br>` + `<label for = "bidAmount">Bid : </lable><input id="bidAmount" name="bidAmount" type="number"/><button type = "button" onclick = auctionRaise()> Raise </button>` +
+            `<button type = "button" onclick = auctionFold()> Fold </button>`);
+        $('#bidAmount').focus();
+        sec = 10
+    }
+    else{
+        $('.popEvent').html(`<h3>Event Name : Auction <i id="timer"><i></h3>` +
+            `<br>` + `<h4>Current Bid : ${data.auctionDetails.bid}</h4>`);
+    }
+
+    // if (data.auctionDetails.playerList.includes(playerName)) {
+    //     console.log("inside");
+    //     $('<div id="auction"></div>').appendTo('body')
+    //         .html('<div><h6 id="autionDetails">' + 
+    //         properties[data.players[playerName].location].name  + 
+    //         ", want to bid? <b>"+ '</b> current bid <b>' + 
+    //         data.auctionDetails.bid + 
+    //         '?</b></h6><h3><label for = "bidAmount">Bid : </lable><input id="bidAmount" name="bidAmount" type="number"/></h3></div>')
+    //         .dialog({
+    //             modal: true,
+    //             title: 'confirm?',
+    //             zIndex: 10000,
+    //             autoOpen: true,
+    //             width: 'auto',
+    //             resizable: false,
+    //             buttons: {
+    //                 Raise: function () {
+    //                     // $(obj).removeAttr('onclick');                                
+    //                     // $(obj).parents('.Parent').remove();
+
+    //                     //$('body').append('<h1>Confirm Dialog Result: <i>Raise</i></h1>');
+    //                     let bid = parseInt($('#bidAmount').val() || '0' )
+    //                     socket.emit('auctionRaise', {player: playerName, bidAmount: bid});
+    //                     $(this).dialog("close");
+
+    //                 },
+    //                 Fold: function () {
+    //                     //$('body').append('<h1>Confirm Dialog Result: <i>Fold</i></h1>');
+    //                     socket.emit('auctionFold', {player: playerName, bidAmount: bid});
+    //                     $(this).dialog("close");
+
+    //                 }
+    //             },
+    //             close: function (event, ui) {
+    //                 socket.emit('auctionFold', {player: playerName, bidAmount: bid});
+    //                 $(this).remove(); 
+    //             }
+    //         });
+    // }
 });
 
 socket.on("purchaseComplete", (data) => {
+    $('.popEvent').html('')
+    alert(`Property Sold to ${data.bidder} for ${data.bid}`);
     $('#finishTurn').removeAttr("disabled");
     $('#roll').removeAttr("disabled");
 });
@@ -248,3 +277,19 @@ function surrender() {
             }
         });
 };
+
+const auctionRaise = function () {
+    // $(obj).removeAttr('onclick');                                
+    // $(obj).parents('.Parent').remove();
+
+    //$('body').append('<h1>Confirm Dialog Result: <i>Raise</i></h1>');
+    let bid = parseInt($('#bidAmount').val() || '0')
+    socket.emit('auctionRaise', { player: playerName, bidAmount: bid });
+
+};
+const auctionFold = function () {
+    //$('body').append('<h1>Confirm Dialog Result: <i>Fold</i></h1>');
+    let bid = parseInt($('#bidAmount').val() || '0')
+    socket.emit('auctionFold', { player: playerName, bidAmount: bid });
+
+}
